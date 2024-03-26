@@ -12,6 +12,7 @@ namespace Xycar {
 template <typename PREC>
 class PIDController {
  public:
+  using Ptr = std::unique_ptr<PIDController>;
   PIDController(PREC kp, PREC ki, PREC kd);
   /**
    * @brief Get the Control Output object
