@@ -80,6 +80,7 @@ void LaneKeepingSystem<PREC>::run()
         if (mDebugging)
         {
             std::cout << "lpos: " << leftPosisionX << ", rpos: " << rightPositionX << ", mpos: " << estimatedPositionX << std::endl;
+            std::cout << "velocity: " << mXycarSpeed << ", steering: " << steeringAngle << std::endl;
             mHoughTransformLaneDetector->drawRectangles(leftPosisionX, rightPositionX, estimatedPositionX);
             cv::imshow("Debug", mHoughTransformLaneDetector->getDebugFrame());
             cv::waitKey(1);
