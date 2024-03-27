@@ -61,10 +61,9 @@ void LaneKeepingSystem<PREC>::run()
         const auto [leftPosisionX, rightPositionX] = mHoughTransformLaneDetector->getLanePosition(mFrame);
         std::cout << leftPosisionX << std::endl;
 
-        if (leftPosisionX == 0) :
-            leftPosisionX -= mWeight;
-        if (rightPositionX == 640) :
-            rightPositionX += mWeight;
+        if (leftPosisionX == 0) {leftPosisionX -= mWeight;}
+        if (rightPositionX == 640) {rightPositionX += mWeight;}
+
 
         mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
 
