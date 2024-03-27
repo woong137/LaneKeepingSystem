@@ -46,6 +46,7 @@ void LaneKeepingSystem<PREC>::setParams(const YAML::Node& config)
     mDebugging = config["DEBUG"].as<bool>();
     //weight
     mWeight = config["HOUGH"]["WEIGHT"].as<PREC>();
+    mLoadWidth = config["HOUGH"]["LOAD_WIDTH"].as<PREC>();
 }
 
 template <typename PREC>
@@ -60,9 +61,11 @@ void LaneKeepingSystem<PREC>::run()
 
         auto [leftPosisionX, rightPositionX] = mHoughTransformLaneDetector->getLanePosition(mFrame);
 
-        if (leftPosisionX == 0) {leftPosisionX -= mWeight;}
-        if (rightPositionX == 640) {rightPositionX += mWeight;}
+        // if (leftPosisionX == 0) {leftPosisionX =- mWeight;}
+        // if (rightPositionX == 640) {rightPositionX += mWeight;}
 
+        if (leftPosisionX == 0) {leftPosisionX = rightPositionX- mLoadWidth;}
+        if (rightPositionX == 640) {rightPositionX = leftPosisionX + mLoadWidth;}
 
         mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
 

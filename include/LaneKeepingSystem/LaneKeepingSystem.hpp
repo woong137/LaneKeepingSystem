@@ -104,6 +104,7 @@ private:
     PREC mAccelerationStep;           ///< How much would accelrate xycar depending on threshold
     PREC mDecelerationStep;           ///< How much would deaccelrate xycar depending on threshold
     PREC mWeight;                     /// < weight value for can't detecting load
+    PREC mLoadWidth;
     // Debug Flag
     bool mDebugging; ///< Debugging or not
 };
