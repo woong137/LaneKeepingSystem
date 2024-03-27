@@ -63,7 +63,7 @@ namespace Xycar
          *
          * @return constexpr double
          */
-        constexpr PREC getPI() { return static_cast<PREC>(std::atan2(1) * 4.0); }
+        constexpr PREC getPI() { return static_cast<PREC>(3.141592); }
     };
 } // namespace Xycar
 #endif // CONTROLLER_HPP_
