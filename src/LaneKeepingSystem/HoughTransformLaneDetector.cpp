@@ -80,6 +80,7 @@ int32_t HoughTransformLaneDetector<PREC>::getLinePositionX(const Lines& lines, c
     return std::round((y - b) / m);
 }
 
+
 template <typename PREC>
 std::pair<Indices, Indices> HoughTransformLaneDetector<PREC>::divideLines(const Lines& lines)
 {
@@ -111,6 +112,7 @@ std::pair<Indices, Indices> HoughTransformLaneDetector<PREC>::divideLines(const 
             leftLineSumX += static_cast<PREC>(x1 + x2) * 0.5f;
             leftLineIndices.emplace_back(i);
         }
+
         else if (0.0f < slope && slope <= mHoughLineSlopeRange)
         {
             rightLineSumX += static_cast<PREC>(x1 + x2) * 0.5f;
@@ -155,10 +157,38 @@ std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getLanePosition(co
         return { 0, mImageWidth };
 
     const auto [leftLineIndices, rightLineIndices] = divideLines(allLines);
-
+    
     auto leftPositionX = getLinePositionX(allLines, leftLineIndices, Direction::LEFT);
     auto rightPositionX = getLinePositionX(allLines, rightLineIndices, Direction::RIGHT);
+    if (mDebugging)
+        drawLines(allLines, leftLineIndices, rightLineIndices);
 
+    return { leftPositionX, rightPositionX };
+}
+
+template <typename PREC>
+std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
+{
+    cv::Mat grayImage;
+    cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
+
+    cv::Mat cannyImage;
+    cv::Canny(grayImage, cannyImage, mCannyEdgeLowThreshold, mCannyEdgeHighThreshold);
+    cv::Mat ROI = cannyImage(cv::Rect(0, mROIStartHeight, mImageWidth, mROIHeight));
+    Lines allLines;
+    cv::HoughLinesP(ROI, allLines, kHoughRho, kHoughTheta, mHoughThreshold, mHoughMinLineLength, mHoughMaxLineGap);
+
+    if (mDebugging)
+        image.copyTo(mDebugFrame);
+
+    if (allLines.empty())
+        return { 0, mImageWidth };
+
+    const auto [leftLineIndices, rightLineIndices] = divideLines(allLines);
+
+    const auto [left_m, left_b] = getLineParameters(allLines, leftLineIndices);
+    const auto [right_m, right_b] = getLineParameters(allLines, rightLineIndices);
+    
     if (mDebugging)
         drawLines(allLines, leftLineIndices, rightLineIndices);
 
