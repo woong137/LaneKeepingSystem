@@ -80,7 +80,14 @@ public:
      * @return Left x position and Right x position
      */
     std::pair<int32_t, int32_t> getLanePosition(const cv::Mat& image);
-
+    
+    /**
+     * @brief Get the Intersection Position object
+     *
+     * @param[in] image Image for searching intersection
+     * @return intersection value
+     */
+    float getIntersection(const cv::Mat& image);
     /**
      * @brief Draw the position rectangles on debug image
      *
