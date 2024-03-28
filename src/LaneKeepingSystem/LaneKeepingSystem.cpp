@@ -28,6 +28,7 @@ LaneKeepingSystem<PREC>::LaneKeepingSystem()
 
     mPublisher = mNodeHandler.advertise<xycar_msgs::xycar_motor>(mPublishingTopicName, mQueueSize);
     mSubscriber = mNodeHandler.subscribe(mSubscribedTopicName, mQueueSize, &LaneKeepingSystem::imageCallback, this);
+    
 }
 
 template <typename PREC>
@@ -62,16 +63,20 @@ void LaneKeepingSystem<PREC>::run()
 
         // if (leftPosisionX == 0) {leftPosisionX =- mWeight;}
         // if (rightPositionX == 640) {rightPositionX += mWeight;}
-        if ((leftPosisionX ==0) and (rightPositionX ==640)){
+
+        if ((leftPosisionX == 0) and (rightPositionX ==640)) {
             ;
-        }else if(leftPosisionX == 0) {
-            leftPosisionX = rightPositionX- mLoadWidth;
         }
+        else if(leftPosisionX == 0) {
+            leftPosisionX = rightPositionX- mLoadWidth;
+            mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+            }
         else if(rightPositionX == 640) {
             rightPositionX = leftPosisionX + mLoadWidth;
-            }
+            mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        }
 
-        mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        // mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
 
         int32_t estimatedPositionX = static_cast<int32_t>(mMovingAverage->getResult());
 
