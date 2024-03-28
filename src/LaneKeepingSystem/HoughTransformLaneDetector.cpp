@@ -193,7 +193,7 @@ float HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
     if (mDebugging)
         drawLines(allLines, leftLineIndices, rightLineIndices);
 
-    return leftPositionX;
+    return intersectionX;
 }
 
 template <typename PREC>
