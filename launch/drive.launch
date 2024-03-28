@@ -12,6 +12,7 @@
         <param name="pixel_format" value="yuyv" />
         <param name="camera_frame_id" value="usb_cam" />
         <param name="io_method" value="mmap"/>
+        <param name="framerate" value="120"/>
     </node>
 
     <node name="Lane_Keeping_System" pkg="LaneKeepingSystem" type="LaneKeepingSystem_node" output="screen"/>

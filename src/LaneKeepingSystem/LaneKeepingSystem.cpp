@@ -28,6 +28,7 @@ LaneKeepingSystem<PREC>::LaneKeepingSystem()
 
     mPublisher = mNodeHandler.advertise<xycar_msgs::xycar_motor>(mPublishingTopicName, mQueueSize);
     mSubscriber = mNodeHandler.subscribe(mSubscribedTopicName, mQueueSize, &LaneKeepingSystem::imageCallback, this);
+    
 }
 
 template <typename PREC>
@@ -43,6 +44,9 @@ void LaneKeepingSystem<PREC>::setParams(const YAML::Node& config)
     mAccelerationStep = config["XYCAR"]["ACCELERATION_STEP"].as<PREC>();
     mDecelerationStep = config["XYCAR"]["DECELERATION_STEP"].as<PREC>();
     mDebugging = config["DEBUG"].as<bool>();
+    //weight
+    mWeight = config["HOUGH"]["WEIGHT"].as<PREC>();
+    mLoadWidth = config["HOUGH"]["LOAD_WIDTH"].as<PREC>();
 }
 
 template <typename PREC>
@@ -55,13 +59,29 @@ void LaneKeepingSystem<PREC>::run()
         if (mFrame.empty())
             continue;
 
-        const auto [leftPosisionX, rightPositionX] = mHoughTransformLaneDetector->getLanePosition(mFrame);
+        auto [leftPosisionX, rightPositionX] = mHoughTransformLaneDetector->getLanePosition(mFrame);
 
-        mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        // if (leftPosisionX == 0) {leftPosisionX =- mWeight;}
+        // if (rightPositionX == 640) {rightPositionX += mWeight;}
+
+        if ((leftPosisionX == 0) and (rightPositionX ==640)) {
+            ;
+        }
+        else if(leftPosisionX == 0) {
+            leftPosisionX = rightPositionX- mLoadWidth;
+            mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+            }
+        else if(rightPositionX == 640) {
+            rightPositionX = leftPosisionX + mLoadWidth;
+            mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        }
+
+        // mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
 
         int32_t estimatedPositionX = static_cast<int32_t>(mMovingAverage->getResult());
 
         int32_t errorFromMid = estimatedPositionX - static_cast<int32_t>(mFrame.cols / 2);
+
         PREC steeringAngle = std::max(static_cast<PREC>(-kXycarSteeringAangleLimit), std::min(static_cast<PREC>(mPID->getControlOutput(errorFromMid)), static_cast<PREC>(kXycarSteeringAangleLimit)));
 
         speedControl(steeringAngle);
@@ -70,6 +90,7 @@ void LaneKeepingSystem<PREC>::run()
         if (mDebugging)
         {
             std::cout << "lpos: " << leftPosisionX << ", rpos: " << rightPositionX << ", mpos: " << estimatedPositionX << std::endl;
+            std::cout << "velocity: " << mXycarSpeed << ", steering: " << steeringAngle << std::endl;
             mHoughTransformLaneDetector->drawRectangles(leftPosisionX, rightPositionX, estimatedPositionX);
             cv::imshow("Debug", mHoughTransformLaneDetector->getDebugFrame());
             cv::waitKey(1);
