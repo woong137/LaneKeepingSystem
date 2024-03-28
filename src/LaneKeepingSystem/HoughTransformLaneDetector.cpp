@@ -167,7 +167,7 @@ std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getLanePosition(co
 }
 
 template <typename PREC>
-std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
+float HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
 {
     cv::Mat grayImage;
     cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
@@ -188,11 +188,12 @@ std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getIntersection(co
 
     const auto [left_m, left_b] = getLineParameters(allLines, leftLineIndices);
     const auto [right_m, right_b] = getLineParameters(allLines, rightLineIndices);
-    
+    const auto intersectionX = (right_b-left_b) / (right_m - left_m);
+
     if (mDebugging)
         drawLines(allLines, leftLineIndices, rightLineIndices);
 
-    return { leftPositionX, rightPositionX };
+    return leftPositionX;
 }
 
 template <typename PREC>
