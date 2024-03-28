@@ -188,7 +188,7 @@ float HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
 
     const auto [left_m, left_b] = getLineParameters(allLines, leftLineIndices);
     const auto [right_m, right_b] = getLineParameters(allLines, rightLineIndices);
-    const auto intersectionX = (right_b-left_b) / (right_m - left_m);
+    const auto intersectionX = (right_b-left_b) / (left_m - right_m);
 
     if (mDebugging)
         drawLines(allLines, leftLineIndices, rightLineIndices);
