@@ -39,7 +39,7 @@ public:
     using DetectorPtr = typename HoughTransformLaneDetector<PREC>::Ptr; ///< Pointer type of LaneDetector
 
     static constexpr int32_t kXycarSteeringAangleLimit = 50; ///< Xycar Steering Angle Limit
-    static constexpr double kFrameRate = 33.0;               ///< Frame rate
+    static constexpr double kFrameRate = 60.0;               ///< Frame rate
     /**
      * @brief Construct a new Lane Keeping System object
      */

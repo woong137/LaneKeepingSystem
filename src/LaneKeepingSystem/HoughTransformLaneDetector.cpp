@@ -13,6 +13,7 @@
  */
 
 #include <numeric>
+#include "opencv2/imgproc.hpp"
 
 #include "LaneKeepingSystem/HoughTransformLaneDetector.hpp"
 
@@ -107,16 +108,15 @@ std::pair<Indices, Indices> HoughTransformLaneDetector<PREC>::divideLines(const 
         else
             slope = static_cast<PREC>(y2 - y1) / (x2 - x1);
 
-        if (-mHoughLineSlopeRange <= slope && slope < 0.0f)
-        {
-            leftLineSumX += static_cast<PREC>(x1 + x2) * 0.5f;
-            leftLineIndices.emplace_back(i);
-        }
-
-        else if (0.0f < slope && slope <= mHoughLineSlopeRange)
+        if (0.0f < slope && slope <= mHoughLineSlopeRange && x2 >= 270 && x1 >= 270)
         {
             rightLineSumX += static_cast<PREC>(x1 + x2) * 0.5f;
             rightLineIndices.emplace_back(i);
+        }
+        else if (-mHoughLineSlopeRange <= slope && slope < 0.0f && x2 < 370 && x1 < 370)
+        {
+            leftLineSumX += static_cast<PREC>(x1 + x2) * 0.5f;
+            leftLineIndices.emplace_back(i);
         }
     }
 
@@ -142,10 +142,26 @@ template <typename PREC>
 std::pair<int32_t, int32_t> HoughTransformLaneDetector<PREC>::getLanePosition(const cv::Mat& image)
 {
     cv::Mat grayImage;
+    cv::Mat dst;
+    cv::Mat gau;
     cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(grayImage,gau,cv::Size(3,3),0);
+
+    // cv::threshold(gray, dst, 100, 255, cv::THRESH_BINARY);
+
+    // int threshold_value = 30;
+
+    // cv::Mat mask;
+    // cv::threshold(grayImage, mask, threshold_value, 255, cv::THRESH_BINARY);
+
+    // cv::Mat detected_area;
+    // cv::bitwise_and(grayImage, grayImage, detected_area, mask);
+
+    // // cv::imshow("Original Image", image);
+    // cv::imshow("binary", dst);
 
     cv::Mat cannyImage;
-    cv::Canny(grayImage, cannyImage, mCannyEdgeLowThreshold, mCannyEdgeHighThreshold);
+    cv::Canny(gau, cannyImage, mCannyEdgeLowThreshold, mCannyEdgeHighThreshold);
     cv::Mat ROI = cannyImage(cv::Rect(0, mROIStartHeight, mImageWidth, mROIHeight));
     Lines allLines;
     cv::HoughLinesP(ROI, allLines, kHoughRho, kHoughTheta, mHoughThreshold, mHoughMinLineLength, mHoughMaxLineGap);
@@ -182,7 +198,7 @@ float HoughTransformLaneDetector<PREC>::getIntersection(const cv::Mat& image)
         image.copyTo(mDebugFrame);
 
     if (allLines.empty())
-        return { 0, mImageWidth };
+        return 0.0;
 
     const auto [leftLineIndices, rightLineIndices] = divideLines(allLines);
 
