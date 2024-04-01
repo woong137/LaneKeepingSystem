@@ -65,23 +65,32 @@ void LaneKeepingSystem<PREC>::run()
         // if (rightPositionX == 640) {rightPositionX += mWeight;}
 
         if ((leftPosisionX == 0) and (rightPositionX ==640)) {
-            ;
+            PREC test = static_cast<int32_t> (mMovingAverage->getResult());
+            if (test <320){
+                mMovingAverage->addSample(static_cast<int32_t>(100));
+            }else if (test>320){
+                mMovingAverage->addSample(static_cast<int32_t>(540));
+            }
+            std::cout << "not detected 2 line" << std::endl;
         }
         else if(leftPosisionX == 0) {
             leftPosisionX = rightPositionX- mLoadWidth;
             mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+            std::cout << "not detected left line" << std::endl;
             }
         else if(rightPositionX == 640) {
             rightPositionX = leftPosisionX + mLoadWidth;
             mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+            std::cout << "not detected right line" << std::endl;
         }
-
-        // mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        else{
+            mMovingAverage->addSample(static_cast<int32_t>((leftPosisionX + rightPositionX) / 2));
+        }
 
         int32_t estimatedPositionX = static_cast<int32_t>(mMovingAverage->getResult());
 
         int32_t errorFromMid = estimatedPositionX - static_cast<int32_t>(mFrame.cols / 2);
-
+        
         PREC steeringAngle = std::max(static_cast<PREC>(-kXycarSteeringAangleLimit), std::min(static_cast<PREC>(mPID->getControlOutput(errorFromMid)), static_cast<PREC>(kXycarSteeringAangleLimit)));
 
         speedControl(steeringAngle);
